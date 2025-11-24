@@ -1,0 +1,896 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>ST PETERS SS KONGOTA - CBC Records</title>
+  <style>
+    :root{
+      --dark-blue:#08345a;
+      --mid-blue:#1a74b0;
+      --light-blue:#cfeefc;
+      --panel-bg: #ffffffcc;
+      --muted:#6b7280;
+      --accent:#1a74b0;
+      --grey:#6b7280;
+    }
+    *{box-sizing:border-box;font-family:Inter, "Segoe UI", Roboto, Arial, sans-serif}
+    body,html{height:100%;margin:0}
+    /* -- Page split: login view and dashboard view both live; show/hide with JS -- */
+    .page{min-height:100vh;display:flex;flex-direction:column}
+    header.topbar{
+      background: linear-gradient(180deg,var(--dark-blue) 0%, var(--mid-blue) 45%, var(--light-blue) 100%);
+      color:white;padding:18px 24px;display:flex;align-items:center;justify-content:space-between;
+      box-shadow:0 4px 18px rgba(0,0,0,0.12)
+    }
+    header.topbar .brand{font-weight:800;font-size:20px;letter-spacing:.4px}
+    header.topbar .brand small{display:block;font-weight:600;font-size:12px;opacity:.9}
+    /* Login area */
+    .center-wrap{flex:1;display:flex;align-items:center;justify-content:center;padding:40px}
+    .login-card{
+      width:100%;max-width:540px;background:rgba(255,255,255,0.95);border-radius:12px;padding:26px;
+      box-shadow:0 10px 40px rgba(8,52,90,0.12)
+    }
+    .login-header{display:flex;align-items:center;gap:12px;margin-bottom:14px}
+    .logo-mark{width:58px;height:58px;background:linear-gradient(180deg,var(--dark-blue),var(--mid-blue));border-radius:8px;display:flex;align-items:center;justify-content:center;color:white;font-weight:800}
+    .login-title{font-size:20px;font-weight:700;color:var(--dark-blue)}
+    .form-row{display:flex;gap:10px;flex-direction:column;margin-bottom:12px}
+    label{font-size:13px;color:var(--dark-blue);font-weight:600}
+    input[type="text"],input[type="password"],input[type="email"],select{
+      padding:10px 12px;border-radius:8px;border:1px solid #d7e6f6;font-size:15px
+    }
+    .btn{
+      display:inline-block;padding:10px 14px;border-radius:8px;background:var(--dark-blue);color:white;border:none;font-weight:700;cursor:pointer;
+      transition:transform .12s ease, box-shadow .12s ease;
+    }
+    .btn:hover{transform:translateY(-2px);box-shadow:0 8px 24px rgba(8,52,90,0.12)}
+    .row-between{display:flex;justify-content:space-between;align-items:center;gap:12px}
+    .link-like{color:var(--mid-blue);text-decoration:none;font-size:14px}
+    .muted{color:var(--muted);font-size:13px}
+    .demo-cred{margin-top:14px;padding:12px;border-left:4px solid var(--mid-blue);background:#f8fbff;border-radius:6px}
+    /* Dashboard */
+    .app{display:flex;min-height:calc(100vh - 76px)} /* subtract header */
+    .sidebar{
+      width:260px;background:linear-gradient(180deg,#021a2b,#06324a);color:white;padding:18px;flex-shrink:0;
+      display:flex;flex-direction:column;gap:12px
+    }
+    .sidebar .menu-title{font-weight:700;margin-bottom:6px;color:#dceffc}
+    .nav-item{display:flex;align-items:center;gap:10px;padding:8px;border-radius:6px;cursor:pointer}
+    .nav-item:hover{background:rgba(255,255,255,0.04)}
+    .class-list{margin-top:10px;border-top:1px solid rgba(255,255,255,0.04);padding-top:10px}
+    .class-btn{display:block;background:transparent;border:none;color:#dbeffb;padding:8px;border-radius:6px;text-align:left;width:100%;cursor:pointer}
+    .class-btn:hover{background:rgba(255,255,255,0.03)}
+    .content{flex:1;padding:20px;background:linear-gradient(180deg,var(--light-blue) 0%, #ffffff 40%);overflow:auto}
+    .top-controls{display:flex;justify-content:space-between;align-items:center;margin-bottom:16px;gap:10px}
+    .card{background:var(--panel-bg);padding:14px;border-radius:10px;box-shadow:0 8px 30px rgba(10,30,60,0.04);border:1px solid rgba(10,30,60,0.03)}
+    /* Tabs */
+    .tabs{display:flex;gap:8px;margin-bottom:12px}
+    .tab{padding:8px 12px;border-radius:8px;cursor:pointer;color:white;font-weight:700}
+    .tab.dark{background:var(--dark-blue)}
+    .tab.grey{background:#6b7280}
+    .tab.black{background:#111827}
+    .tab.active{outline:3px solid rgba(26,116,176,0.12)}
+    /* Grid for main area */
+    .grid{display:grid;grid-template-columns:1fr;gap:12px}
+    .hstack{display:flex;gap:12px;align-items:center}
+    /* Students table */
+    table{width:100%;border-collapse:collapse}
+    th,td{padding:8px;border-bottom:1px solid rgba(15,45,75,0.06);text-align:left}
+    th{background:rgba(8,52,90,0.05);font-weight:700}
+    .small{font-size:13px;color:var(--muted)}
+    /* Buttons small */
+    .btn-sm{padding:6px 8px;border-radius:6px;font-weight:700;border:none;cursor:pointer}
+    .btn-danger{background:#d9534f;color:white}
+    .btn-primary{background:var(--accent);color:white}
+    .btn-outline{background:transparent;border:1px solid rgba(10,30,60,0.06);color:var(--dark-blue)}
+    /* Forms inline */
+    .inline-form{display:flex;gap:8px;align-items:center}
+    .tooltip{position:relative;display:inline-block}
+    .tooltip .tiptext{visibility:hidden;width:220px;background:#0b2340;color:#fff;text-align:left;padding:8px;border-radius:6px;position:absolute;z-index:50;left:105%;top:50%;transform:translateY(-50%);box-shadow:0 6px 20px rgba(2,20,40,0.3)}
+    .tooltip:hover .tiptext{visibility:visible}
+    /* Carousel */
+    .carousel{position:relative;width:100%;height:280px;border-radius:10px;overflow:hidden}
+    .slides{display:flex;transition:transform .6s ease;height:100%}
+    .slide{min-width:100%;display:flex;align-items:center;justify-content:center;background:#e9f6ff}
+    .slide img, .slide video{max-width:100%;max-height:100%;object-fit:cover}
+    .carousel-controls{position:absolute;left:12px;right:12px;top:50%;transform:translateY(-50%);display:flex;justify-content:space-between}
+    .dotbar{display:flex;gap:6px;position:absolute;bottom:12px;left:50%;transform:translateX(-50%)}
+    .dot{width:10px;height:10px;border-radius:99px;background:rgba(8,52,90,0.2);cursor:pointer}
+    .dot.active{background:var(--dark-blue)}
+    /* small screens */
+    @media (max-width:880px){
+      .sidebar{display:none}
+      .content{padding:12px}
+      .login-card{padding:18px}
+    }
+    footer.app-footer{text-align:center;padding:16px;background:linear-gradient(180deg,var(--mid-blue),var(--dark-blue));color:white;margin-top:18px}
+    .welcome-msg{font-weight:700;color:var(--dark-blue);text-align:center;margin-top:20px}
+  </style>
+</head>
+<body>
+  <div class="page" id="appRoot">
+    <header class="topbar">
+      <div class="brand">
+        ST PETERS SS KONGOTA
+        <small>CBC Records Curriculum Management System</small>
+      </div>
+      <div id="headerRight">
+        <div id="userInfo" style="display:none">
+          <span id="whoIs" class="small"></span>
+          <button class="btn" id="logoutBtn" style="margin-left:12px;background:#ff6b6b">Logout</button>
+        </div>
+        <div id="loginHeaderCTA" style="display:none">
+          <!-- reserved -->
+        </div>
+      </div>
+    </header>
+
+    <!-- LOGIN VIEW -->
+    <main class="center-wrap" id="loginView">
+      <div class="login-card">
+        <div class="login-header">
+          <div class="logo-mark">SP</div>
+          <div>
+            <div class="login-title">Welcome — ST PETERS SS KONGOTA</div>
+            <div class="small muted">Sign in with your school email to access the dashboard</div>
+          </div>
+        </div>
+
+        <form id="loginForm" autocomplete="on">
+          <div class="form-row">
+            <label for="email">School Email</label>
+            <input id="email" type="email" placeholder="e.g. john.doe@pet or admin1@admin" required />
+          </div>
+
+          <div class="form-row">
+            <label for="password">Password</label>
+            <input id="password" type="password" placeholder="Enter password" required />
+          </div>
+
+          <div class="row-between" style="margin-top:6px;margin-bottom:10px">
+            <div>
+              <button type="submit" class="btn">Login</button>
+            </div>
+            <div>
+              <a href="#" id="forgotBtn" class="link-like">Forgot password?</a>
+            </div>
+          </div>
+        </form>
+
+        <div class="demo-cred">
+          <div style="font-weight:700;margin-bottom:6px">Guide — how to create accounts</div>
+          <div class="small">Administrators MUST first login with an admin account that you add in STORE (admin-only). Admin emails must include <code>@admin</code>. Teacher emails must include <code>@pet</code>.</div>
+        </div>
+
+        <div style="margin-top:12px" class="small">
+          <strong>Note:</strong> Admins create teacher accounts and student records from the dashboard → STORE.
+        </div>
+      </div>
+    </main>
+
+    <!-- DASHBOARD VIEW -->
+    <div id="dashboardView" style="display:none" class="app">
+      <aside class="sidebar">
+        <div>
+          <div class="menu-title">MENU</div>
+          <div class="nav-item" id="navDashboard" title="Main dashboard">
+            <span> Dashboard</span>
+          </div>
+          <div class="nav-item" id="navAssessment" title="Assessment & marks">
+            <span> Assessment</span>
+          </div>
+          <div class="nav-item" id="navTeachers" title="Teachers list">
+            <span>Teachers</span>
+          </div>
+          <div class="nav-item" id="navAdmissions" title="Admissions & school info">
+            <span>Overview</span>
+          </div>
+          <div class="nav-item" id="navAbout" title="About us (images & video)">
+            <span> Activities</span>
+          </div>
+        </div>
+
+        <div class="class-list">
+          <div class="menu-title">CLASSES</div>
+          <button class="class-btn" data-class="S1">S1</button>
+          <button class="class-btn" data-class="S2">S2</button>
+          <button class="class-btn" data-class="S3">S3</button>
+          <button class="class-btn" data-class="S4">S4</button>
+        </div>
+
+        <div style="margin-top:auto">
+          <div class="menu-title">Admin Tools</div>
+          <div class="nav-item tooltip" id="navStore">
+            <span> STORE</span>
+            <div class="tiptext">Admin-only area: add administrators, teachers (with subjects), and initial passwords.</div>
+          </div>
+
+          <div style="margin-top:12px" class="small muted">Hover any menu for info. Tabs: dark blue, grey, black.</div>
+        </div>
+      </aside>
+
+      <section class="content">
+        <div class="top-controls">
+          <div>
+            <div style="font-weight:800;font-size:16px">Dashboard</div>
+            <div class="small muted" id="currentRole"></div>
+          </div>
+          <div class="hstack">
+            <div class="small muted">@deus: <a href="https://www.umu.ac.ug" target="_blank" class="link-like">MOST welcome</a></div>
+            <div>
+              <button class="btn btn-outline" id="refreshDataBtn">Refresh</button>
+            </div>
+          </div>
+        </div>
+
+        <!-- Tabs -->
+        <div class="tabs" id="tabsRow">
+          <div class="tab dark active" data-tab="overview">Admissions</div>
+          <div class="tab grey" data-tab="assessment">Assessment</div>
+          <div class="tab black" data-tab="teachers">Teachers</div>
+          <div class="tab dark" data-tab="admissions">school profile</div>
+          <div class="tab grey" data-tab="about">Activities</div>
+          <div class="tab dark" data-tab="store" id="storeTab" style="display:none">STORE</div>
+        </div>
+
+        <div class="grid">
+          <!-- OVERVIEW -->
+          <div class="card" id="tab-overview">
+            <h3>Welcome</h3>
+            <p class="small muted">This is the main overview. Use the left menu to pick classes, or the tabs above.</p>
+
+            <div style="margin-top:12px" class="hstack">
+              <div class="card" style="flex:1">
+                <div style="font-weight:700">Student population</div>
+                <div class="small muted" id="studentCount">0 students</div>
+              </div>
+              <div class="card" style="flex:1">
+                <div style="font-weight:700">Teachers</div>
+                <div class="small muted" id="teacherCount">0 teachers</div>
+              </div>
+            </div>
+
+            <div style="margin-top:12px">
+              <h4>Quick class actions</h4>
+              <div class="hstack">
+                <select id="quickClassSelect">
+                  <option value="S1">S1</option>
+                  <option value="S2">S2</option>
+                  <option value="S3">S3</option>
+                  <option value="S4">S4</option>
+                </select>
+                <input id="quickStudentName" placeholder="Student full name" />
+                <button class="btn btn-primary" id="quickAddStudent">Add student</button>
+              </div>
+            </div>
+          </div>
+
+          <!-- ASSESSMENT -->
+          <div class="card" id="tab-assessment" style="display:none">
+            <div class="hstack" style="justify-content:space-between">
+              <div>
+                <h3>Assessment</h3>
+                <div class="small muted">View and enter marks per class and subject</div>
+              </div>
+              <div class="hstack">
+                <select id="assessClassSelect">
+                  <option value="S1">S1</option>
+                  <option value="S2">S2</option>
+                  <option value="S3">S3</option>
+                  <option value="S4">S4</option>
+                </select>
+                <select id="assessTermSelect">
+                  <option value="Term 1">Term 1</option>
+                  <option value="Term 2">Term 2</option>
+                  <option value="Term 3">Term 3</option>
+                </select>
+                <button class="btn btn-outline" id="loadAssessment">Load</button>
+              </div>
+            </div>
+
+            <div style="margin-top:12px;overflow:auto">
+              <table id="assessmentTable">
+                <thead id="assessmentHead"></thead>
+                <tbody id="assessmentBody"></tbody>
+              </table>
+            </div>
+
+            <div style="margin-top:10px" class="small muted">Only teachers assigned to subjects and administrators can edit marks.</div>
+          </div>
+
+          <!-- TEACHERS -->
+          <div class="card" id="tab-teachers" style="display:none">
+            <h3>Teachers</h3>
+            <p class="small muted">Teachers created by admin appear here (admins can add via STORE)</p>
+            <div style="margin-top:12px">
+              <table id="teachersTable">
+                <thead><tr><th>Name / Email</th><th>Subject</th><th>Role</th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+
+          <!-- ADMISSIONS -->
+          <div class="card" id="tab-admissions" style="display:none">
+            <div style="display:flex;gap:12px;flex-wrap:wrap;justify-content:space-between">
+              <div style="flex:1;min-width:260px">
+                <h3>Admissions</h3>
+                <div class="small muted">School address, contacts, mission, vision, rules</div>
+                <div style="margin-top:10px">
+                  <label>Address</label>
+                  <input id="admAddress" placeholder="School address" />
+                  <label>Contact (phone/email)</label>
+                  <input id="admContact" placeholder="e.g. +25677XXXX or info@school" />
+                  <label>Mission</label>
+                  <input id="admMission" placeholder="Mission statement" />
+                  <label>Vision</label>
+                  <input id="admVision" placeholder="Vision statement" />
+                  <label>Rules (comma separated 5 rules)</label>
+                  <input id="admRules" placeholder="Rule1, Rule2, Rule3, Rule4, Rule5" />
+                  <div style="margin-top:8px">
+                    <button class="btn btn-primary" id="saveAdmissions">Save</button>
+                  </div>
+                </div>
+              </div>
+
+              <div style="flex:1;min-width:260px">
+                <h4>Preview</h4>
+                <div class="card" style="padding:10px">
+                  <div id="previewAddress" class="small"></div>
+                  <div id="previewContact" class="small"></div>
+                  <div style="margin-top:8px"><strong>Mission</strong><div id="previewMission" class="small muted"></div></div>
+                  <div style="margin-top:6px"><strong>Vision</strong><div id="previewVision" class="small muted"></div></div>
+                  <div style="margin-top:8px"><strong>Rules</strong>
+                    <ol id="previewRules"></ol>
+                  </div>
+                </div>
+              </div>
+            </div>
+          </div>
+
+          <!-- ABOUT -->
+          <div class="card" id="tab-about" style="display:none">
+            <h3>About Us</h3>
+            <p class="small muted">Sliding images and a short video</p>
+            <div class="carousel" id="aboutCarousel">
+              <div class="slides" id="slides">
+                <div class="slide"><img src="bend.jpg" alt="school view" /></div>
+                <div class="slide"><img src="stand.jpg" alt="students" /></div>
+                <div class="slide"><video controls src="vide.mp4"></video></div>
+              </div>
+              <div class="carousel-controls">
+                <button id="prevSlide" class="btn btn-sm">‹</button>
+                <button id="nextSlide" class="btn btn-sm">›</button>
+              </div>
+              <div class="dotbar" id="dots"></div>
+            </div>
+          </div>
+
+          <!-- STORE (admin-only) -->
+          <div class="card" id="tab-store" style="display:none">
+            <h3>STORE — Admin only</h3>
+            <div class="small muted">Create admin accounts, teacher accounts (with subject), and set their passwords. Admin emails must contain <code>@admin</code>. Teacher emails must contain <code>@pet</code>.</div>
+
+            <div style="margin-top:12px;display:flex;gap:12px;flex-wrap:wrap">
+              <div style="flex:1;min-width:220px">
+                <label>Account name</label>
+                <input id="storeName" placeholder="Full name for account" />
+              </div>
+              <div style="flex:1;min-width:220px">
+                <label>Email</label>
+                <input id="storeEmail" placeholder="e.g. sam@pet or boss@admin" />
+              </div>
+              <div style="flex:1;min-width:140px">
+                <label>Role</label>
+                <select id="storeRole">
+                  <option value="teacher">Teacher</option>
+                  <option value="admin">Administrator</option>
+                </select>
+              </div>
+              <div style="flex:1;min-width:180px">
+                <label>Subject (for teachers)</label>
+                <input id="storeSubject" placeholder="E.g. MATH, ENG, ICT" />
+              </div>
+              <div style="flex:1;min-width:160px">
+                <label>Password</label>
+                <input id="storePassword" placeholder="password" />
+              </div>
+            </div>
+
+            <div style="margin-top:10px">
+              <button class="btn btn-primary" id="addStoreBtn">Add account</button>
+            </div>
+
+            <div style="margin-top:14px">
+              <h4>Accounts in STORE</h4>
+              <table id="storeTable">
+                <thead><tr><th>Name</th><th>Email</th><th>Role</th><th>Subject</th><th>Action</th></tr></thead>
+                <tbody></tbody>
+              </table>
+            </div>
+          </div>
+
+        </div>
+
+        <div class="welcome-msg">Welcome to ST PETERS SS NKONGOTA — stay with us. In virtue lead the world.</div>
+      </section>
+    </div>
+
+    <footer class="app-footer">
+      &copy; 2025 ST PETERS SS KONGOTA — CBC Records Management
+    </footer>
+  </div>
+
+  <!-- Forgot password modal (simple) -->
+  <div id="forgotModal" style="display:none;position:fixed;left:0;top:0;width:100%;height:100%;background:rgba(0,0,0,0.45);align-items:center;justify-content:center;z-index:99">
+    <div style="background:white;padding:18px;border-radius:8px;min-width:320px">
+      <h4>Reset password</h4>
+      <div class="small muted">Enter your registered email and new password</div>
+      <div style="margin-top:10px">
+        <label>Email</label>
+        <input id="resetEmail" type="email" />
+        <label>New password</label>
+        <input id="resetPwd" type="password" />
+        <div style="margin-top:10px;display:flex;gap:8px">
+          <button id="doResetBtn" class="btn btn-primary">Save</button>
+          <button id="cancelReset" class="btn btn-outline">Cancel</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    /*************************************************************************
+     * Simple client-side app implementing:
+     * - login (admins and teachers stored in localStorage in "cbc_store" key)
+     * - admin-only STORE for creating accounts
+     * - classes S1-S4 with students CRUD (admin only)
+     * - assessment per class & term, subjects as columns
+     * - teachers see only their subject column to edit (and admin sees all)
+     * - forgot password modal to reset password by email
+     * - persistence through localStorage
+     *************************************************************************/
+
+    // CONSTANTS
+    const SUBJECTS = ["ENGLISH","MATH","ICT","PHY","CHEM","BIO","GEO","PE","CRE","HIS","ISLAM","ART","DRAWING","TAILORING"];
+    const CLASSES = ["S1","S2","S3","S4"];
+
+    // UTIL: load/save store
+    function loadStore(){
+      try{
+        return JSON.parse(localStorage.getItem('cbc_store')||'{"accounts":[],"students":{},"assessments":{},"admissions":{}}');
+      }catch(e){
+        return {accounts:[],students:{},assessments:{},admissions:{}};
+      }
+    }
+    function saveStore(s){ localStorage.setItem('cbc_store', JSON.stringify(s)); }
+
+    // Initialize default structure if missing
+    let store = loadStore();
+    if(!store.students) store.students = {};
+    CLASSES.forEach(c=>{ if(!store.students[c]) store.students[c]=[]; });
+    if(!store.assessments) store.assessments = {}; // keyed by class_term e.g. "S1|Term 1"
+    if(!store.accounts) store.accounts = [];
+
+    // Add a default admin if none exists
+    if(store.accounts.filter(a=>a.role==='admin').length===0){
+      store.accounts.push({name:'Super Admin', email:'superadmin@admin', role:'admin', password:'admin123', subject:''});
+      saveStore(store);
+    }
+
+    // UI references
+    const loginView = document.getElementById('loginView');
+    const dashboardView = document.getElementById('dashboardView');
+    const loginForm = document.getElementById('loginForm');
+    const emailInput = document.getElementById('email');
+    const passwordInput = document.getElementById('password');
+    const whoIs = document.getElementById('whoIs');
+    const userInfo = document.getElementById('userInfo');
+    const logoutBtn = document.getElementById('logoutBtn');
+    const currentRole = document.getElementById('currentRole');
+    const storeTab = document.getElementById('storeTab');
+    const tabsRow = document.getElementById('tabsRow');
+
+    // Simple auth state
+    function setLoggedIn(account){
+      localStorage.setItem('cbc_logged_in', JSON.stringify(account));
+      renderLoggedIn();
+    }
+    function getLoggedIn(){ try{ return JSON.parse(localStorage.getItem('cbc_logged_in')||'null'); }catch(e){return null;} }
+    function clearLoggedIn(){ localStorage.removeItem('cbc_logged_in'); renderLoggedOut(); }
+
+    // Render functions
+    function renderLoggedOut(){
+      loginView.style.display = '';
+      dashboardView.style.display = 'none';
+      userInfo.style.display = 'none';
+    }
+    function renderLoggedIn(){
+      const acc = getLoggedIn();
+      if(!acc) { renderLoggedOut(); return; }
+      loginView.style.display = 'none';
+      dashboardView.style.display = '';
+      userInfo.style.display = '';
+      whoIs.textContent = acc.name ? acc.name + ' ('+acc.role+')' : acc.email+' ('+acc.role+')';
+      currentRole.textContent = (acc.role? 'Role: '+acc.role.toUpperCase() : '');
+      // show/hide STORE tab depending on role
+      if(acc.role === 'admin'){ storeTab.style.display = ''; document.getElementById('navStore').style.display='flex'; } else { storeTab.style.display='none'; document.getElementById('navStore').style.display='none'; }
+      // populate counts & tables
+      refreshCounts();
+      renderStoreTable();
+      renderTeachersTable();
+      renderAssessment(); // refresh assessment area
+    }
+
+    // Refresh counts
+    function refreshCounts(){
+      store = loadStore();
+      const stuCount = CLASSES.reduce((s,c)=> s + (store.students[c]? store.students[c].length:0), 0);
+      document.getElementById('studentCount').textContent = stuCount + ' students';
+      document.getElementById('teacherCount').textContent = store.accounts.filter(a=>a.role==='teacher').length + ' teachers';
+    }
+
+    // LOGIN handling — must require email and password matching accounts
+    loginForm.addEventListener('submit',function(e){
+      e.preventDefault();
+      const email = emailInput.value.trim();
+      const pwd = passwordInput.value;
+      if(!email || !pwd){ alert('Please enter both email and password'); return; }
+
+      store = loadStore();
+      const match = store.accounts.find(a=>a.email.toLowerCase()===email.toLowerCase() && a.password===pwd);
+      if(!match){
+        alert('Credentials not found. Please ask admin to add your account or check the email/password.');
+        return;
+      }
+      // set as logged in; store only name,email,role,subject in session
+      setLoggedIn({name:match.name,email:match.email,role:match.role,subject:match.subject});
+      // redirect to dashboard view (render)
+      renderLoggedIn();
+      // Activate default tab overview
+      activateTab('overview');
+    });
+
+    // Logout
+    logoutBtn.addEventListener('click',function(){ clearLoggedIn(); });
+
+    // Forgot password modal
+    const forgotBtn = document.getElementById('forgotBtn');
+    const forgotModal = document.getElementById('forgotModal');
+    const resetEmail = document.getElementById('resetEmail');
+    const resetPwd = document.getElementById('resetPwd');
+    const doResetBtn = document.getElementById('doResetBtn');
+    const cancelReset = document.getElementById('cancelReset');
+
+    forgotBtn.addEventListener('click',function(e){ e.preventDefault(); forgotModal.style.display='flex'; resetEmail.value=''; resetPwd.value=''; });
+    cancelReset.addEventListener('click',function(){ forgotModal.style.display='none'; });
+    doResetBtn.addEventListener('click',function(){
+      const mail = resetEmail.value.trim(); const npwd = resetPwd.value;
+      if(!mail || !npwd){ alert('Please enter email and new password'); return; }
+      store = loadStore();
+      const acc = store.accounts.find(a=>a.email.toLowerCase()===mail.toLowerCase());
+      if(!acc){ alert('No account with that email found'); return; }
+      acc.password = npwd;
+      saveStore(store);
+      alert('Password updated. You can now sign in.');
+      forgotModal.style.display='none';
+    });
+
+    // Tabs activation
+    function activateTab(name){
+      document.querySelectorAll('.tab').forEach(t=> t.classList.remove('active'));
+      const tabEl = document.querySelector('.tab[data-tab="'+name+'"]');
+      if(tabEl) tabEl.classList.add('active');
+      // hide all content sections
+      document.querySelectorAll('[id^="tab-"]').forEach(sec=> sec.style.display='none');
+      const showSec = document.getElementById('tab-'+name);
+      if(showSec) showSec.style.display = '';
+      // update nav highlight (left menu)
+      // special: populate dynamic content per tab
+      if(name==='overview'){ refreshCounts(); }
+      if(name==='assessment'){ renderAssessment(); }
+      if(name==='teachers'){ renderTeachersTable(); }
+      if(name==='admissions'){ renderAdmissionsPreview(); }
+      if(name==='about'){ /* nothing */ }
+      if(name==='store'){ renderStoreTable(); }
+    }
+    document.querySelectorAll('.tab').forEach(t=> t.addEventListener('click', ()=> activateTab(t.dataset.tab) ));
+
+    // Left menu clicks
+    document.getElementById('navDashboard').addEventListener('click', ()=> activateTab('overview'));
+    document.getElementById('navAssessment').addEventListener('click', ()=> activateTab('assessment'));
+    document.getElementById('navTeachers').addEventListener('click', ()=> activateTab('teachers'));
+    document.getElementById('navAdmissions').addEventListener('click', ()=> activateTab('admissions'));
+    document.getElementById('navAbout').addEventListener('click', ()=> activateTab('about'));
+    document.getElementById('navStore').addEventListener('click', ()=> activateTab('store'));
+
+    // Quick add student
+    document.getElementById('quickAddStudent').addEventListener('click', ()=>{
+      const cls = document.getElementById('quickClassSelect').value;
+      const name = document.getElementById('quickStudentName').value.trim();
+      if(!name){ alert('Enter student name'); return; }
+      store = loadStore();
+      store.students[cls] = store.students[cls] || [];
+      store.students[cls].push({name:name, id: Date.now().toString() });
+      saveStore(store);
+      document.getElementById('quickStudentName').value='';
+      refreshCounts();
+      alert('Student added to '+cls);
+    });
+
+    // Class buttons (left) - show students list editor
+    document.querySelectorAll('.class-btn').forEach(btn=>{
+      btn.addEventListener('click', async ()=>{
+        const cls = btn.dataset.class;
+        await openClassEditor(cls);
+      });
+    });
+
+    // Class editor modal-lite (in content area)
+    async function openClassEditor(cls){
+      const acc = getLoggedIn();
+      if(!acc) { alert('Please login'); return; }
+      // render a simple editor inside content area (replacing assessment temporarily)
+      activateTab('overview');
+      const container = document.createElement('div');
+      container.className='card';
+      container.innerHTML = '<h3>Manage '+cls+'</h3><div class="small muted">Add or remove students for '+cls+'</div><div style="margin-top:8px" id="classEditorArea"></div>';
+      const content = document.querySelector('.content');
+      content.prepend(container);
+      const area = container.querySelector('#classEditorArea');
+
+      function refreshEditor(){
+        store = loadStore();
+        const students = store.students[cls] || [];
+        area.innerHTML = '';
+        const form = document.createElement('div');
+        form.className='inline-form';
+        const input = document.createElement('input');
+        input.placeholder='New student full name';
+        const addBtn = document.createElement('button');
+        addBtn.className='btn-sm btn-primary';
+        addBtn.textContent='Add';
+        addBtn.addEventListener('click', ()=>{
+          const nm = input.value.trim(); if(!nm) return alert('Enter name');
+          store.students[cls] = store.students[cls]||[];
+          store.students[cls].push({name:nm, id:Date.now().toString()});
+          saveStore(store); input.value=''; refreshEditor(); refreshCounts();
+        });
+        form.appendChild(input); form.appendChild(addBtn);
+        area.appendChild(form);
+        // list
+        const tbl = document.createElement('table');
+        const thead = document.createElement('thead'); thead.innerHTML='<tr><th style="width:70%">Name</th><th>Action</th></tr>'; tbl.appendChild(thead);
+        const tbody = document.createElement('tbody');
+        (store.students[cls]||[]).forEach(s=>{
+          const tr = document.createElement('tr');
+          tr.innerHTML = '<td>'+s.name+'</td><td><button class="btn-sm btn-danger">Delete</button></td>';
+          tr.querySelector('button').addEventListener('click', ()=>{
+            if(!confirm('Delete '+s.name+'?')) return;
+            store.students[cls] = store.students[cls].filter(x=>x.id!==s.id);
+            saveStore(store); refreshEditor(); refreshCounts();
+          });
+          tbody.appendChild(tr);
+        });
+        tbl.appendChild(tbody);
+        area.appendChild(tbl);
+        // close button
+        const close = document.createElement('div'); close.style.marginTop='8px';
+        const closeBtn = document.createElement('button'); closeBtn.className='btn btn-outline'; closeBtn.textContent='Close';
+        closeBtn.addEventListener('click', ()=> { container.remove(); });
+        close.appendChild(closeBtn);
+        area.appendChild(close);
+      }
+      refreshEditor();
+    }
+
+    /***************** ASSESSMENT RENDERING *****************/
+    // Build assessment table header and body
+    function renderAssessment(){
+      const acc = getLoggedIn();
+      if(!acc){ document.getElementById('assessmentTable').style.display='none'; return; }
+      document.getElementById('assessmentTable').style.display='';
+      const cls = document.getElementById('assessClassSelect').value;
+      const term = document.getElementById('assessTermSelect').value;
+      // header: student name | subjects...
+      const head = document.getElementById('assessmentHead');
+      const body = document.getElementById('assessmentBody');
+      head.innerHTML = ''; body.innerHTML = '';
+      const trh = document.createElement('tr');
+      trh.innerHTML = '<th>Student</th>';
+      // Subject columns - teachers see only their subject column (plus Student)
+      let subjectsToShow = SUBJECTS.slice();
+      if(acc.role === 'teacher'){
+        // teacher sees only his/her subject
+        subjectsToShow = SUBJECTS.filter(s=> s.toLowerCase() === (acc.subject||'').toLowerCase());
+        if(subjectsToShow.length===0){ // if subject not matched show notification
+          head.innerHTML = '<tr><th>Student</th><th>Note</th></tr>';
+          body.innerHTML = '<tr><td colspan="2"><em class="small muted">You are not assigned to any subject or your subject was not matched. Contact admin.</em></td></tr>';
+          return;
+        }
+      }
+      subjectsToShow.forEach(s=>{ const th = document.createElement('th'); th.textContent = s; trh.appendChild(th); });
+      head.appendChild(trh);
+
+      const students = (store.students[cls]||[]);
+      if(students.length===0){
+        body.innerHTML = '<tr><td colspan="'+(1+subjectsToShow.length)+'">No students in '+cls+'. Admins can add students from the left menu or quick add.</td></tr>';
+        return;
+      }
+
+      // prepare assessments store key
+      const key = cls+'|'+term;
+      store.assessments[key] = store.assessments[key] || {}; // keyed by studentId -> {subject:mark,...}
+      students.forEach(st=>{
+        const tr = document.createElement('tr');
+        const tdName = document.createElement('td'); tdName.textContent = st.name; tr.appendChild(tdName);
+        subjectsToShow.forEach(sub=>{
+          const td = document.createElement('td');
+          const input = document.createElement('input');
+          input.style.width='80px'; input.style.padding='6px'; input.style.borderRadius='6px';
+          input.value = (store.assessments[key][st.id] && store.assessments[key][st.id][sub]) ? store.assessments[key][st.id][sub] : '';
+          // editing rules: only admin or teacher(of that subject) can edit
+          const canEdit = (getLoggedIn().role==='admin') || (getLoggedIn().role==='teacher' && (getLoggedIn().subject||'').toLowerCase() === sub.toLowerCase());
+          input.disabled = !canEdit;
+          input.addEventListener('change', function(){
+            const val = input.value.trim();
+            store.assessments[key] = store.assessments[key] || {};
+            store.assessments[key][st.id] = store.assessments[key][st.id] || {};
+            store.assessments[key][st.id][sub] = val;
+            saveStore(store);
+          });
+          td.appendChild(input);
+          tr.appendChild(td);
+        });
+        body.appendChild(tr);
+      });
+
+    }
+
+    document.getElementById('loadAssessment').addEventListener('click', function(){ store = loadStore(); renderAssessment(); });
+
+    /***************** STORE (admin) *****************/
+    document.getElementById('addStoreBtn').addEventListener('click', ()=>{
+      const name = document.getElementById('storeName').value.trim();
+      const email = document.getElementById('storeEmail').value.trim();
+      const role = document.getElementById('storeRole').value;
+      const subject = document.getElementById('storeSubject').value.trim();
+      const pwd = document.getElementById('storePassword').value || 'changeme';
+
+      if(!name || !email){ alert('Please enter name and email'); return; }
+      // validate email rules
+      if(role==='admin'){
+        if(!email.includes('@admin')) return alert('Admin email must include @admin');
+      } else if(role==='teacher'){
+        if(!email.includes('@pet')) return alert('Teacher email must include @pet');
+        if(!subject) return alert('Provide subject for teacher (e.g. MATH)');
+      }
+
+      // ensure unique email
+      store = loadStore();
+      if(store.accounts.some(a=> a.email.toLowerCase()===email.toLowerCase())) return alert('An account with that email already exists');
+
+      store.accounts.push({name, email, role, password:pwd, subject: subject.toUpperCase()});
+      saveStore(store);
+      alert('Account created: ' + email);
+      // clear inputs
+      document.getElementById('storeName').value=''; document.getElementById('storeEmail').value=''; document.getElementById('storePassword').value=''; document.getElementById('storeSubject').value='';
+      renderStoreTable(); renderTeachersTable(); refreshCounts();
+    });
+
+    // render store accounts table
+    function renderStoreTable(){
+      store = loadStore();
+      const tbody = document.querySelector('#storeTable tbody');
+      tbody.innerHTML = '';
+      store.accounts.forEach((a,idx)=>{
+        const tr = document.createElement('tr');
+        const subj = a.subject || '';
+        tr.innerHTML = `<td>${a.name}</td><td>${a.email}</td><td>${a.role}</td><td>${subj}</td><td><button class="btn-sm btn-danger">Delete</button></td>`;
+        tr.querySelector('button').addEventListener('click', ()=>{
+          if(!confirm('Delete account '+a.email+'?')) return;
+          store.accounts.splice(idx,1);
+          saveStore(store);
+          renderStoreTable(); renderTeachersTable(); refreshCounts();
+        });
+        tbody.appendChild(tr);
+      });
+    }
+
+    // teachers table
+    function renderTeachersTable(){
+      store = loadStore();
+      const tbody = document.querySelector('#teachersTable tbody');
+      tbody.innerHTML = '';
+      store.accounts.filter(a=>a.role==='teacher').forEach(t=>{
+        const tr = document.createElement('tr');
+        tr.innerHTML = `<td>${t.name} <div class="small muted">${t.email}</div></td><td>${t.subject||''}</td><td>${t.role}</td>`;
+        tbody.appendChild(tr);
+      });
+    }
+
+    /***************** Admissions *****************/
+    document.getElementById('saveAdmissions').addEventListener('click', ()=>{
+      store = loadStore();
+      store.admissions = {
+        address: document.getElementById('admAddress').value,
+        contact: document.getElementById('admContact').value,
+        mission: document.getElementById('admMission').value,
+        vision: document.getElementById('admVision').value,
+        rules: (document.getElementById('admRules').value||'').split(',').map(s=>s.trim()).filter(Boolean)
+      };
+      saveStore(store);
+      alert('Admissions saved');
+      renderAdmissionsPreview();
+    });
+
+    function renderAdmissionsPreview(){
+      store = loadStore();
+      const adm = store.admissions || {};
+      document.getElementById('previewAddress').textContent = adm.address || '';
+      document.getElementById('previewContact').textContent = adm.contact || '';
+      document.getElementById('previewMission').textContent = adm.mission || '';
+      document.getElementById('previewVision').textContent = adm.vision || '';
+      const list = document.getElementById('previewRules'); list.innerHTML = '';
+      (adm.rules||[]).forEach(r=>{
+        const li = document.createElement('li'); li.textContent = r; list.appendChild(li);
+      });
+    }
+
+    /***************** Carousel (About Us) *****************/
+    const slidesEl = document.getElementById('slides');
+    const dotsEl = document.getElementById('dots');
+    let slideIndex = 0;
+    const slides = slidesEl.children;
+    for(let i=0;i<slides.length;i++){
+      const dot = document.createElement('div'); dot.className='dot'; dot.addEventListener('click', ()=> goSlide(i));
+      dotsEl.appendChild(dot);
+    }
+    function updateCarousel(){
+      slidesEl.style.transform = 'translateX(-'+(slideIndex*100)+'%)';
+      Array.from(dotsEl.children).forEach((d,i)=> d.classList.toggle('active', i===slideIndex));
+    }
+    function goSlide(i){ slideIndex = (i+slides.length)%slides.length; updateCarousel(); }
+    document.getElementById('prevSlide').addEventListener('click', ()=> goSlide(slideIndex-1));
+    document.getElementById('nextSlide').addEventListener('click', ()=> goSlide(slideIndex+1));
+    setInterval(()=> goSlide(slideIndex+1), 5500);
+    updateCarousel();
+
+    /***************** Load session or show login *****************/
+    (function init(){
+      store = loadStore();
+      const acc = getLoggedIn();
+      if(acc){
+        renderLoggedIn();
+        activateTab('overview');
+      }else{
+        renderLoggedOut();
+      }
+      // events for assessment selects
+      document.getElementById('assessClassSelect').addEventListener('change', renderAssessment);
+      document.getElementById('assessTermSelect').addEventListener('change', renderAssessment);
+      // refresh button
+      document.getElementById('refreshDataBtn').addEventListener('click', ()=> { store = loadStore(); renderLoggedIn(); alert('Refreshed'); });
+      // store tab render restricted: hide/show depends on role change (we set in renderLoggedIn)
+      // attach nav store delete safety: only admin can access the store tab (guard)
+      document.getElementById('storeTab').addEventListener('click', ()=> {
+        const acc = getLoggedIn();
+        if(!acc || acc.role !== 'admin'){ alert('STORE is admin-only'); activateTab('overview'); }
+      });
+    })();
+
+    // Expose a simple developer helper: create sample data (not executed)
+    function __dev_seed(){
+      store = loadStore();
+      // add sample students
+      store.students.S1 = [{name:'John Kato',id:'s1a'},{name:'Mary Achan',id:'s1b'}];
+      store.students.S2 = [{name:'Peter Otim',id:'s2a'}];
+      store.accounts.push({name:'Mr Math', email:'mathteacher@pet',role:'teacher',password:'math123',subject:'MATH'});
+      store.accounts.push({name:'Ms Eng', email:'engteacher@pet',role:'teacher',password:'eng123',subject:'ENGLISH'});
+      saveStore(store);
+      alert('seeded');
+    }
+    // note: to seed sample data run __dev_seed() from console if you want
+  </script>
+</body>
+</html>
